@@ -3,6 +3,7 @@ import Control.Applicative
 import Data.List
 import Data.Monoid
 
+
  -- Haskell encoding of parser combinators
 
 data Parser a = Parser { parse :: String -> [(a, String)] }
@@ -26,9 +27,25 @@ instance Applicative Parser where
   (<*>) pf pa = Parser {
     parse = \s -> do 
                     (f, s') <- s @> pf
-                    (a, s'') <- s @> pa
+                    (a, s'') <- s' @> pa
                     return (f a, s'')
   }
+
+-- Fun fact: once you have Monad, you can simply write Applicative
+-- trivially
+{-
+instance Applicative Parser where
+  pure :: a -> Parser a
+  pure a = Parser {
+    parse = \s -> [(a, s)]
+  }
+
+  (<*>) :: Parser (a -> b) -> Parser a -> Parser b
+  (<*>) pf pa = do
+         f <- pf
+         a <- pa
+         return $ f a
+-}
 
 instance Monad Parser where
   return = pure
@@ -56,7 +73,6 @@ eatc c f = Parser $ \s ->
     [] -> []
     (c':cs) -> if c == c' then [(f c, cs)] else []
 
-
 eats_ :: [Char] -> [Char] -> ([Char] -> a) -> Parser a
 eats_ accum [] f = return (f accum)
 eats_ accum (c:cs) f = eatc c id >>= \c -> eats_ (accum ++ [c]) cs f
@@ -83,9 +99,23 @@ pdigit = Parser (\s -> case s of
 pint :: Parser Int
 pint = read <$> (starof pdigit)
 
+-- Applicative Parsing
+-- B = '(' B ')' | 'a' <- grammar is not regular, but is context free
+data Brackets = Brackets Brackets | Done
+
+instance (Show Brackets) where
+  show (Brackets b) = "[" ++ (show b) ++ "]"
+  show (Done) = "a"
+
+pbracket :: Parser Brackets
+pbracket = eatc 'a' (const Done) <|> 
+         (Brackets <$>  ((eatc '[' id) *> (pbracket <* (eatc ']' id))))
+
+-- Monadic parsing using the Monad typeclass
+-- Needed for context sensitivity
 data Expr = Add Term Expr | Sub Term Expr | LoneExpr Term
 data Term = Mult Factor Term | Div Factor Term | LoneTerm Factor
-data Factor = Base Int | Bracketed Expr
+data Factor = Base Int | Bracketed Expr | Negated Factor
 
 instance Show Factor where
   show :: Factor -> String
@@ -107,11 +137,16 @@ instance Show Expr where
 
 pfactor :: Parser Factor
 pfactor = pwhitespace >> 
-  ((Base <$> pint) <|> do
+  ((Base <$> pint) <|> (do
             eatc '(' id
             expr <- pexpr 
             eatc ')' id
             return $ Bracketed expr)
+  <|>
+  (do
+    eatc '-' id
+    factor <- pfactor
+    return $ Negated factor))
     
 
 pterm :: Parser Term
@@ -127,7 +162,7 @@ pterm = pwhitespace >>
 
 
 pexpr :: Parser Expr
-pexpr = pwhitespace >>
+pexpr = pwhitespace >> 
   ((do
     t1 <- pterm
     pwhitespace
@@ -136,3 +171,27 @@ pexpr = pwhitespace >>
     t2 <- pexpr
     return $ if op == '+' then Add t1 t2 else Sub t1 t2)
   <|> LoneExpr <$> pterm)
+
+evalExpr :: Expr -> Float
+evalExpr (Add t e) = evalTerm t + evalExpr e
+evalExpr (Sub t e) = evalTerm t - evalExpr e
+evalExpr (LoneExpr t) = evalTerm t
+
+evalTerm :: Term -> Float
+evalTerm (Mult f t) = evalFactor f * evalTerm t
+evalTerm (Div f t) = evalFactor f / evalTerm t
+evalTerm (LoneTerm f) = evalFactor f
+
+evalFactor :: Factor -> Float
+evalFactor (Base i) = fromIntegral i
+evalFactor (Bracketed e) = evalExpr e
+evalFactor (Negated f) = -1.0 * (evalFactor f)
+
+
+parseAndEval :: String -> Maybe Float
+parseAndEval str = case parsed of
+                     (x:xs) -> Just (evalExpr (fst x))
+                     [] -> Nothing
+                   where
+                     parsed = str @> pexpr
+
