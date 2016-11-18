@@ -141,6 +141,9 @@ instance Pairing f g => Pairing (Cofree f) (Free g) where
 
 
 
+-- Pairing is essential to this code
+-- what would happen if the pairing coule be hidden?
+-- this needs all of the DSL
 instance Pairing Interp DSL where
   pair :: (a -> b -> r) -> Interp a -> DSL b -> r
   pair f (Interp getter _) (Get key next) = f a' b' where
