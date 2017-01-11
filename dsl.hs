@@ -139,8 +139,6 @@ instance Pairing f g => Pairing (Cofree f) (Free g) where
   pair p (a :< _ ) (Pure x)  = p a x
   pair p (_ :< fs) (Roll gs) = pair (pair p) fs gs
 
-
-
 -- Pairing is essential to this code
 -- what would happen if the pairing coule be hidden?
 -- this needs all of the DSL

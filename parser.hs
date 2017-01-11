@@ -103,6 +103,8 @@ pint = read <$> (starof pdigit)
 -- B = '(' B ')' | 'a' <- grammar is not regular, but is context free
 data Brackets = Brackets Brackets | Done
 
+
+
 instance (Show Brackets) where
   show (Brackets b) = "[" ++ (show b) ++ "]"
   show (Done) = "a"
@@ -120,19 +122,20 @@ data Factor = Base Int | Bracketed Expr | Negated Factor
 instance Show Factor where
   show :: Factor -> String
   show (Base i) = show i
-  show (Bracketed e) = "[" <> show e <> "]"
+  show (Bracketed e) = show e
+  show (Negated e) = "-" <> show e
 
 instance Show Term where
   show :: Term -> String
   show (Mult f t) = "(" <> (show f) <>  " * " <> (show t) <> ")"
   show (Div f t) = "(" <> (show f) <> " / " <> (show t) <> ")"
-  show (LoneTerm f) = "(" <> (show f) <> ")"
+  show (LoneTerm f) = (show f)
 
 instance Show Expr where
   show :: Expr -> String
-  show (Add t e) = "(" <> (show t) <> " + " <> (show e) <> ")"
-  show (Sub t e) = "(" <> (show t) <> " - " <> (show e) <>  ")"
-  show (LoneExpr t) = "(" <> (show t) <> ")"
+  show (Add t e) = (show t) <> " + " <> (show e)
+  show (Sub t e) = (show t) <> " - " <> (show e) 
+  show (LoneExpr t) = (show t)
 
 
 pfactor :: Parser Factor

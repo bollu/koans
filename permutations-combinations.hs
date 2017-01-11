@@ -7,6 +7,7 @@ import Control.Monad.ST
 import Control.Exception
 import Debug.Trace
 
+-- *** naive permutations ***
 -- split array at index
 split :: Int -> [a] -> ([a], [a])
 split i xs = (take i xs, drop i xs)
@@ -23,7 +24,7 @@ perms (x:xs) = mconcat $ fmap (insertAll x) (perms xs)
 
 
 
--- johnson-trotter
+-- *** johnson-trotter ***
 -- [https://en.wikipedia.org/wiki/Steinhaus%E2%80%93Johnson%E2%80%93Trotter_algorithm]
 data Direction = L | R deriving(Show, Eq)
 data Directed a = Directed Direction a deriving (Eq)
@@ -43,7 +44,10 @@ greatestmobile xs = foldrM
   (\i (gi, mg)-> do
                   dirx @ (Directed _ x) <- V.read xs i
                   mobile <- ismobile i xs
-                  trace ("i: " <> (show i) <> " | dirx: " <> (show dirx) <> " | mobile? " <> (show mobile)) (return ())
+                  --  trace ("i: " <> (show i) <>
+                  --        " | dirx: " <> (show dirx) <>
+                  --        " | mobile? " <>
+                  --        (show mobile)) (return ())
                   return $ case mg of
                             Nothing -> if mobile then (i, Just dirx) else (gi, mg)
                             Just (dirg @ (Directed _ g)) -> 
@@ -65,11 +69,11 @@ ismobile i xs = do
     else  do
              let adji = if dir == R then i + 1 else i - 1
              diradj @ (Directed _ adj) <- V.read xs adji
-             trace ("(i: " <> show i <> ", x: " <> (show dirx) <> ")" <> 
-                    " >? " <> 
-                    "(adji: " <> show adji <> ", adjx: " <> (show diradj) <> ")" <> 
-                    " = " <>
-                    show (x >= adj)) (return ())
+             -- trace ("(i: " <> show i <> ", x: " <> (show dirx) <> ")" <> 
+             --        " >? " <> 
+             --        "(adji: " <> show adji <> ", adjx: " <> (show diradj) <> ")" <> 
+             --        " = " <>
+             --       show (x >= adj)) (return ())
              return $ x >= adj -- >= or >?
     
 
@@ -94,16 +98,15 @@ reversegt (Directed _ gt) xs =
 jt' :: (Ord a, Show a) => V.STVector s (Directed a) -> ST s ()
 jt' xs = do
   (i, mx) <- greatestmobile  xs
-  trace ("gm: " ++ (show i ) <> " : " <> (show mx)) (return ())
+  -- trace ("gm: " ++ (show i ) <> " : " <> (show mx)) (return ())
   case mx of
     Nothing -> return ()
     Just x -> move i xs >> reversegt x xs
-
--- TEST THIS OUT!
 
 jt :: (Ord x, Show x) => [Directed x] -> [Directed x]
 jt xs = runST $ do
   xsvec <- Vimmut.thaw (Vimmut.fromList xs)
   jt' xsvec
   Vimmut.toList <$> Vimmut.freeze xsvec
--- heaps' algorithm
+
+-- *** heaps' algorithm ***
