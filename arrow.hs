@@ -265,6 +265,8 @@ evalA (If econd etrue efalse) =
   >>> (liftArr (\(Bl b, env) -> if b then Left env else Right env)) -- arr Env (Either Env Env)
   >>> ((evalA etrue) ||| (evalA efalse)) -- arr (Either Env Env) Val
 
+-- (Zip Fusion with Hyperfunctions)
+-- http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.36.4961
 -- Categories of Processes Enriched in Final Coalgebras
 -- hyperfunctios
 newtype H a b = Phi (H b a -> b)
