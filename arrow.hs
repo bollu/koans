@@ -297,5 +297,13 @@ f # g = Phi (\k -> f #@ (g # k))
 run :: H a a -> a
 run f = f #@ self
 
+--- Machines
+data SP a b = Put b (SP a b) | Get (a -> SP a b)
+get = Get
+put=Put
+
+-- Causal commutative arrows
+-- http://haskell.cs.yale.edu/wp-content/uploads/2012/06/FromJFP.pdf
+
 main :: IO ()
 main = undefined
