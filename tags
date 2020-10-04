@@ -4,22 +4,9 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
-A	fenwick.cpp	/^int A[LEN+1];$/;"	v
-A	fenwick.py	/^A = [random.randint(0, 4) for _ in range(ALEN)]$/;"	v
-ALEN	fenwick.py	/^ALEN = 5$/;"	v
-LEN	fenwick.cpp	/^static const int LEN=100;$/;"	v	file:
-T	fenwick.cpp	/^int T[LEN+1];$/;"	v
-T	fenwick.py	/^T = [0 for _ in range(ALEN)]$/;"	v
-fenadd	fenwick.cpp	/^void fenadd(ui ix, ui delta) {$/;"	f
-feninc	fenwick.py	/^def feninc(ix, delta):$/;"	f
-feninit	fenwick.cpp	/^void feninit() {$/;"	f
-feninit	fenwick.py	/^def feninit():$/;"	f
-fensum	fenwick.py	/^def fensum(r):$/;"	f
-fensumtill	fenwick.cpp	/^int fensumtill(int ix) {$/;"	f
-g	fenwick.py	/^def g(i):$/;"	f
-lsbval	fenwick.cpp	/^ui lsbval(ui i) {$/;"	f
-main	fenwick.cpp	/^int main() {$/;"	f
-naivesum	fenwick.py	/^def naivesum(r):$/;"	f
-printvec	fenwick.cpp	/^void printvec(T *arr, std::string name="" ) {$/;"	f
-sumtill	fenwick.cpp	/^int sumtill(int ix) {$/;"	f
-val_of_set_lsb	fenwick.py	/^def val_of_set_lsb(i):$/;"	f
+handle	stacker.rkt	/^(define (handle [arg #f])$/;"	f
+pop-stack!	stacker.rkt	/^(define (pop-stack!)$/;"	f
+push-stack!	stacker.rkt	/^(define (push-stack! arg)$/;"	f
+read-syntax	stacker.rkt	/^(define (read-syntax path port)$/;"	f
+stack	stacker.rkt	/^(define stack empty)$/;"	f
+stacker-module-begin	stacker.rkt	/^(define-macro (stacker-module-begin HANDLE-EXPR ...)$/;"	f

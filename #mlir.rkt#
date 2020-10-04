@@ -1,0 +1,29 @@
+#lang racket
+
+;; (enter! "mlir.rkt")
+(require  geiser/server)
+;; func: ('func <name> <data>)
+;; instr: ('inst <name> (results) <fn-name> (args))
+;; basic-block: ('bb (instr*))
+;; cfg: ('cfg  bb*)
+
+(struct fn (name body) #:transparent)
+(struct bb (name params insts) #:transparent)
+(struct inst (results fnname args) #:transparent)
+(struct term (fnname args) #:transparent)
+
+
+(fn 'main
+  (list (bb 'entry '()
+         `(inst 'c 'mk ,(+ 4  5)))))
+
+
+
+
+
+
+
+
+
+
+
