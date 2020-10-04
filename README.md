@@ -1,3 +1,6 @@
+- taglessfinal.hs
+- fingertree.hs
+
 Haskell "Zen Koans". 
 
 A collection of popular techniques, folklore, and "functional pearls"
