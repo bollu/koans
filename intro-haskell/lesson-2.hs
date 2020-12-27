@@ -1,0 +1,26 @@
+-- http://lambda-the-ultimate.org/node/2229
+-- https://wiki.haskell.org/Research_papers/Functional_pearls
+-- https://www.reddit.com/r/haskell/comments/9cyzzb/must_readfavourite_functional_pearls/
+-- Free monads
+-- Traversable, Foldable
+-- Tardis / reverse state
+-- Operational monads
+-- Optics
+-- Witherable
+-- Comonads
+-- Comonads for coeffects?
+-- Bound monad for binding variables
+-- Omega for diagonalization
+-- Zippers
+-- Ornaments
+-- parsing using seminirs (conor's papers)
+-- Essence of the iterator pattern
+-- Doc / a prettier printer
+-- Finger trees?
+-- Presburger arithmetic using automata
+-- rank/select/coselect adjunction
+-- QuickCheck
+-- MCMC? Probabilistic 
+--   | programming in haskell
+-- Haxl
+-- Selective

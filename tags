@@ -4,9 +4,16 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
-handle	stacker.rkt	/^(define (handle [arg #f])$/;"	f
-pop-stack!	stacker.rkt	/^(define (pop-stack!)$/;"	f
-push-stack!	stacker.rkt	/^(define (push-stack! arg)$/;"	f
-read-syntax	stacker.rkt	/^(define (read-syntax path port)$/;"	f
-stack	stacker.rkt	/^(define stack empty)$/;"	f
-stacker-module-begin	stacker.rkt	/^(define-macro (stacker-module-begin HANDLE-EXPR ...)$/;"	f
+A	fenwick.cpp	/^int A[LEN+1];$/;"	v
+LEN	fenwick.cpp	/^static const int LEN=100;$/;"	v	file:
+T	fenwick.cpp	/^int T[LEN+1];$/;"	v
+deck	card-draw-trick.py	/^deck = list(range(13*4))$/;"	v
+fenadd	fenwick.cpp	/^void fenadd(ui ix, ui delta) {$/;"	f
+feninit	fenwick.cpp	/^void feninit() {$/;"	f
+fensumtill	fenwick.cpp	/^int fensumtill(int ix) {$/;"	f
+lsbval	fenwick.cpp	/^ui lsbval(ui i) {$/;"	f
+main	fenwick.cpp	/^int main() {$/;"	f
+numbers	card-draw-trick.py	/^numbers = [str(s) for s in range(1, 11)] + ["J(5)", "Q(5)", "K(5)", "A(5)"] $/;"	v
+printvec	fenwick.cpp	/^void printvec(T *arr, std::string name="" ) {$/;"	f
+suits	card-draw-trick.py	/^suits = ["♠", "♡", "♣" , "♢"]$/;"	v
+sumtill	fenwick.cpp	/^int sumtill(int ix) {$/;"	f
