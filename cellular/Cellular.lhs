@@ -1,12 +1,11 @@
 At the end of this blog post, we'll know how to render pretty 
 cellular automata such as these:
 
-<img src="TODO">
-
 and the really cool algebraic structure that these possess! They turn
-out to be the _dual_ of a `monad`, known as a `comonad`.
+out to be the _dual_ of a `monad`, known as a comonad.
 
 First, our magic incantations:
+
 
 > {-# LANGUAGE RecordWildCards #-}
 > {-# LANGUAGE NoMonomorphismRestriction #-}
@@ -29,8 +28,7 @@ First, our magic incantations:
 > import Diagrams.TwoD
 > import System.Random
 
-
-As stated before, this simulation uses the `Comonad` typeclass to model
+This simulation uses the `Comonad` typeclass to model
 cellular automata. There are multiple ways of looking at this algebra, and one
 way to think of them is a structure that can automatically convert
 "global-to-local" transforms into "global-to-global" transforms.
@@ -42,64 +40,68 @@ The neighbour state is the global state, which is used to update the local
 state of the cell. This can be thought of as the type
 
 ```haskell
-Grid -> Cell
+CA -> Cell
 ```
 
-
-where `Grid` is the grid in which the cellular automata is running, and `Cell`
-is the new state of the cell. However, the question that immediately arises is
-- which cell? the answer is that, the `Grid` not only encodes the state of the
+where `CA` is the state of the full cellular automata universe, and `Cell`
+is the new state of a cell. However, the question that immediately arises is
+-- which cell? the answer is that, the `CA` not only encodes the state of the
 cellular automata, but also a __focused cell__ which is updated.
 
-
-The `Grid` is not just a grid, it is a grid with a cell that it is targeted on.
 However, this seems ridiculous, since we have simply added extra complexity
 (that of focusing on a particular cell) with zero gains in benefit. 
 
 
 
-The nice part of a `Comonad` is that if we have a structure that knows how to do a "focused update", the `Comonad` enables us to extend this
-to the entire structure.
-Written in types, it is along the lines of
+The nice part of a `Comonad` is that if we have a structure that knows how to
+do a "focused update", the `Comonad` enables us to extend this to the entire
+structure.  It is called `cobind`:
 
-```haskell
-Grid -> (Grid -> Cell) -> Grid
-```
+    ```haskell
+    cobind :: CA -> (CA -> Cell) -> CA
+    ```
 
 If we think of grid as a container of cells (or as a functor `w`), this gives us the new type
-```haskell
-Grid -> (Grid -> Cell) -> Grid
--- replace Grid with w Cell
-w Cell -> (w Cell -> Cell) -> w Cell
--- replace Cell with type variable a
-w a -> (w a -> a) -> w a
--- generalize type even further, by allowing the
--- output type to differ
--- (this is shown to be possible with an implementation later on)
-w a -> (w a -> b) -> w b
-```
-Note that this rewrite exploited the fact that a `Grid` is simply a functor (collection) of `Cell`s, and then used this to 
-rewrite the type signature.
+
+
+    ```haskell
+    cobind :: CA -> (CA -> Cell) -> CA
+    ```
+ replace `CA` with `w Cell`:
+
+    ```haskell
+    cobind :: w Cell -> (w Cell -> Cell) -> w Cell
+    ```
+
+replace `Cell` with `a`:
+
+    ```haskell
+    cobind :: w a -> (w a -> a) -> w a
+    ```
+
+ generalize type even further, by allowing the output type to differ:
+
+    ```haskell
+    cobind :: w a -> (w a -> b) -> w b
+    ```
+
+Note that this rewrite exploited the fact that a `Grid` is simply a functor
+(collection) of `Cell`s, and then used this to rewrite the type signature.
 
 
 The type signature
-```haskell
-w a -> (w a -> b) -> w b
-```
-can be sharply contrasted with the monadic `>>= (bind)` as 
-```haskell
->>= :: m a -> (a -> m b) -> m b
-```
 
-Indeed, these structures are dual, which is why there are called as `Comonad`, which is also why I
-picked `w` as the symbol for `Comonad` (which is an upside-down `m` for `Monad`). It is usually called as "cobind", and is
-written as
-```haskell
-=>> :: w a -> (w a -> b) -> w b
-```                     
-with the interpretation that it takes a global structure `w a` which is focused on some `a` in the `w a`, and then
-takes a transform that updates the focused `a` in the `w a ` to a `b`. Given these two pieces of information, the
-Comonad automatically updates every single `a`, to produce an updated `w b`.
+    ```haskell
+    cobind :: w a -> (w a -> b) -> w b
+    ```
+can be sharply contrasted with the monadic `>>= (bind)` as 
+
+    ```haskell
+    >>= :: m a -> (a -> m b) -> m b
+    ```
+
+So this is the "dual" of `>>=` (hence we use `w` instead of `m`). In haskell
+code, this appears as:
 
 
 > class Functor w => Comonad w where
@@ -110,10 +112,16 @@ Comonad automatically updates every single `a`, to produce an updated `w b`.
 > 
 
 
-The particular comonad that we will be needing for our cellular automata is
-known as a `RingZipper`. This is a data structure that provides us access
-to a circular arrangement of elements, with one particular element that's
-currently focused. Concretely, it looks like:
+with the interpretation that it takes a global structure `w a` which is focused
+on some `a` in the `w a`, and then takes a transform that updates the focused
+`a` in the `w a ` to a `b`. Given these two pieces of information, the Comonad
+automatically updates every single `a`, to produce an updated `w b`.
+
+
+The particular data structure that implements comonad for
+modelling our cellular automata is known as a `RingZipper`. This is a data
+structure that provides us access to a circular arrangement of elements, with
+one particular element that's currently focused. Concretely, it looks like:
 
 
 > data RingZipper a = RingZipper {
@@ -175,7 +183,7 @@ is *focused* at a given location, and then tells us how to produce the next
 
 > 
 > 
-> makeRingZipperM :: Monad m => Dim -> m a -> m (RingZipper a)
+> makeRingZipperM :: Monad m => Int -> m a -> m (RingZipper a)
 > makeRingZipperM n f = do
 >     let mid = n `div` 2
 >     before <- replicateM (mid - 1) f
@@ -261,7 +269,8 @@ is *focused* at a given location, and then tells us how to produce the next
 
 
 
-#### Drawing code
+Drawing code
+-------------
 
 This is the part that interfaces with the `diagrams` library to draw these
 cellular automata.
@@ -269,6 +278,7 @@ cellular automata.
 
 
 
+> type MyBackend = Cairo
 > renderCA :: CA -> QDiagram MyBackend V2 (N MyBackend) Any
 > renderCA rz = foldr1 (|||) (map cellToDiagram $ (mergeRingZipper rz))
 
