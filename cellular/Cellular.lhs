@@ -1,5 +1,11 @@
-At the end of this blog post, we'll know how to render pretty 
+Cellular automata and comonads
+============================
+
+At the end of this blog post, we'll know how to simulate and render pretty
 cellular automata such as these:
+
+<img src="./cellular.gif" />
+
 
 and the really cool algebraic structure that these possess! They turn
 out to be the _dual_ of a `monad`, known as a comonad.
@@ -162,20 +168,33 @@ of these cells arranged in a circular universe.
 is *focused* at a given location, and then tells us how to produce the next
 *focused* cell.
 
-> cyclic1dTypes :: Int; cyclic1dTypes = 4
+> -- | Number of colors
+> cyclic1dTypes :: Int;
+> cyclic1dTypes = 4
 
+> -- | Update rule
 > stepCell :: CA -> Cell
-> stepCell s = cell'
->     where
->         cell = extract s  -- extract neighbour
->         cell' = if hasNextNeighbour (neighbours s)
->            then Cell { cv = (cv cell + 1) `mod` cyclic1dTypes }
->            else cell
->         hasNextNeighbour neighbours = any (\c -> cv c == ((cv cell) + 1) `mod` cyclic1dTypes) neighbours
+> stepCell ca = cell'
+>  where
+>   cell = extract ca  -- extract current cell
+>   -- | if we have a neighbour of the adjacent color,
+>   cell' = if hasNextNeighbour ca 
+>      -- | Then become that color
+>      then Cell { cv = (cv cell + 1) `mod` cyclic1dTypes }
+>      -- | Otherwise, remain the same
+>      else cell
 > 
 > -- | extract left and right neighbour from a cell.
-> neighbours :: RingZipper a -> [a]
-> neighbours z = [extract $ shiftLeft z, extract $ shiftRight z]
+> neighbours :: CA -> [Cell]
+> neighbours ca = [extract $ shiftLeft ca, extract $ shiftRight ca]
+
+> -- | Check if any neighbour has value that is next
+> -- to ours
+> hasNextNeighbour CA -> Bool
+> hasNextNeighbour ca = 
+>    let nextTy = ((cv cell) + 1) `mod` cyclic1dTypes
+>    in any (\c -> cv c == nextTy) 
+>       (neighbours ca)
 
 
 The ring zipper structure is given by:
@@ -282,4 +301,11 @@ and finally pass our GIF to diagrams with `gifMain`.
 
 
 
-- [I] /home/bollu/work/functionalworks > cabal build && cabal exec cellular -- -w 1024 -h400  -o foo.gif
+To run the executable and produce the `gif`, clone the repo [bollu/koans](), enter into the
+`cellular` folder and run with:
+
+```
+koans/cellular$ cabal build
+koans/cellular$ cabal exec cellular -- -w1024 -h400  -o cellular.gif
+```
+

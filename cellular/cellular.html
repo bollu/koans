@@ -1,0 +1,235 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; background-color: #f8f8f8; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+pre, code { background-color: #f8f8f8; }
+code > span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+code > span.dt { color: #204a87; } /* DataType */
+code > span.dv { color: #0000cf; } /* DecVal */
+code > span.bn { color: #0000cf; } /* BaseN */
+code > span.fl { color: #0000cf; } /* Float */
+code > span.ch { color: #4e9a06; } /* Char */
+code > span.st { color: #4e9a06; } /* String */
+code > span.co { color: #8f5902; font-style: italic; } /* Comment */
+code > span.ot { color: #8f5902; } /* Other */
+code > span.al { color: #ef2929; } /* Alert */
+code > span.fu { color: #000000; } /* Function */
+code > span.er { color: #a40000; font-weight: bold; } /* Error */
+code > span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #000000; } /* Constant */
+code > span.sc { color: #000000; } /* SpecialChar */
+code > span.vs { color: #4e9a06; } /* VerbatimString */
+code > span.ss { color: #4e9a06; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #000000; } /* Variable */
+code > span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+code > span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+code > span.ex { } /* Extension */
+code > span.at { color: #c4a000; } /* Attribute */
+code > span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+code > span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+  </style>
+  <style>
+  body { font-family: sans-serif; }
+  @media (max-width: 480px) { .container { margin-left: 5%; margin-right: 5%; } body { font-size: 30px; } }
+  @media (max-width: 1024px) { .container { margin-left: 5%; margin-right: 5%; } body { font-size: 30px; } }
+  // desktop
+  @media (min-width: 1024px) { .container { margin-left: 30%; margin-right: 30%; } }
+  h1, h2, h3, h4, h5 { line-height: 0.9em; }
+  </style>
+</head>
+<body>
+<h1 id="cellular-automata-and-comonads">Cellular automata and comonads</h1>
+<p>At the end of this blog post, we'll know how to simulate and render pretty cellular automata such as these:</p>
+<p><img src="./cellular.gif" /></p>
+<p>and the really cool algebraic structure that these possess! They turn out to be the <em>dual</em> of a <code>monad</code>, known as a comonad.</p>
+<p>First, our magic incantations:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE RecordWildCards #-}</span>
+<span class="ot">{-# LANGUAGE NoMonomorphismRestriction #-}</span>
+<span class="ot">{-# LANGUAGE FlexibleContexts          #-}</span>
+<span class="ot">{-# LANGUAGE TypeFamilies              #-}</span>
+<span class="ot">{-# LANGUAGE PartialTypeSignatures #-}</span>
+
+<span class="kw">module</span> <span class="dt">Main</span> <span class="kw">where</span>
+<span class="co">-- import qualified Data.Vector as V</span>
+<span class="kw">import </span><span class="dt">Control.Monad</span>
+<span class="kw">import </span><span class="dt">Data.List</span>(intercalate)
+<span class="kw">import </span><span class="dt">Data.Monoid</span> (<span class="dt">Any</span>)
+<span class="kw">import </span><span class="dt">Diagrams.Prelude</span> <span class="kw">hiding</span> (after)
+<span class="kw">import </span><span class="dt">Diagrams.TwoD.Layout.Grid</span>
+<span class="kw">import </span><span class="dt">Diagrams.Core.Compile</span>
+<span class="kw">import </span><span class="dt">Diagrams.Core.Types</span>
+<span class="kw">import </span><span class="dt">Diagrams.Backend.CmdLine</span>
+<span class="kw">import </span><span class="dt">Diagrams.Backend.Cairo.CmdLine</span>
+<span class="kw">import </span><span class="dt">Diagrams.Backend.Cairo</span>
+<span class="kw">import </span><span class="dt">Diagrams.TwoD</span>
+<span class="kw">import </span><span class="dt">System.Random</span></code></pre></div>
+<p>This simulation uses the <code>Comonad</code> typeclass to model cellular automata. There are multiple ways of looking at this algebra, and one way to think of them is a structure that can automatically convert &quot;global-to-local&quot; transforms into &quot;global-to-global&quot; transforms.</p>
+<p>For example, in a cellular automata, the &quot;global-to-local&quot; transformation is updating the state of <em>one</em> Cell by reading the cell's neighbours. The neighbour state is the global state, which is used to update the local state of the cell. This can be thought of as the type</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="dt">CA</span> <span class="ot">-&gt;</span> <span class="dt">Cell</span></code></pre></div>
+<p>where <code>CA</code> is the state of the full cellular automata universe, and <code>Cell</code> is the new state of a cell. However, the question that immediately arises is -- which cell? the answer is that, the <code>CA</code> not only encodes the state of the cellular automata, but also a <strong>focused cell</strong> which is updated.</p>
+<p>However, this seems ridiculous, since we have simply added extra complexity (that of focusing on a particular cell) with zero gains in benefit.</p>
+<p>The nice part of a <code>Comonad</code> is that if we have a structure that knows how to do a &quot;focused update&quot;, the <code>Comonad</code> enables us to extend this to the entire structure. It is called <code>cobind</code>:</p>
+<pre><code>```haskell
+cobind :: CA -&gt; (CA -&gt; Cell) -&gt; CA
+```</code></pre>
+<p>If we think of grid as a container of cells (or as a functor <code>w</code>), this gives us the new type</p>
+<pre><code>```haskell
+cobind :: CA -&gt; (CA -&gt; Cell) -&gt; CA
+```</code></pre>
+<p>replace <code>CA</code> with <code>w Cell</code>:</p>
+<pre><code>```haskell
+cobind :: w Cell -&gt; (w Cell -&gt; Cell) -&gt; w Cell
+```</code></pre>
+<p>replace <code>Cell</code> with <code>a</code>:</p>
+<pre><code>```haskell
+cobind :: w a -&gt; (w a -&gt; a) -&gt; w a
+```</code></pre>
+<p>generalize type even further, by allowing the output type to differ:</p>
+<pre><code>```haskell
+cobind :: w a -&gt; (w a -&gt; b) -&gt; w b
+```</code></pre>
+<p>Note that this rewrite exploited the fact that a <code>Grid</code> is simply a functor (collection) of <code>Cell</code>s, and then used this to rewrite the type signature.</p>
+<p>The type signature</p>
+<pre><code>```haskell
+cobind :: w a -&gt; (w a -&gt; b) -&gt; w b
+```</code></pre>
+<p>can be sharply contrasted with the monadic <code>&gt;&gt;= (bind)</code> as</p>
+<pre><code>```haskell
+&gt;&gt;= :: m a -&gt; (a -&gt; m b) -&gt; m b
+```</code></pre>
+<p>So this is the &quot;dual&quot; of <code>&gt;&gt;=</code> (hence we use <code>w</code> instead of <code>m</code>). In haskell code, this appears as:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">class</span> <span class="dt">Functor</span> w <span class="ot">=&gt;</span> <span class="dt">Comonad</span> w <span class="kw">where</span>
+<span class="ot">  extract ::</span> w a <span class="ot">-&gt;</span> a
+<span class="ot">  duplicate ::</span> w a <span class="ot">-&gt;</span> w (w a)
+<span class="ot">  cobind ::</span> (w a <span class="ot">-&gt;</span> b) <span class="ot">-&gt;</span> w a <span class="ot">-&gt;</span> w b
+  cobind f <span class="fu">=</span> fmap f <span class="fu">.</span> duplicate</code></pre></div>
+<p>with the interpretation that it takes a global structure <code>w a</code> which is focused on some <code>a</code> in the <code>w a</code>, and then takes a transform that updates the focused <code>a</code> in the <code>w a</code> to a <code>b</code>. Given these two pieces of information, the Comonad automatically updates every single <code>a</code>, to produce an updated <code>w b</code>.</p>
+<p>The particular data structure that implements comonad for modelling our cellular automata is known as a <code>RingZipper</code>. This is a data structure that provides us access to a circular arrangement of elements, with one particular element that's currently focused. Concretely, it looks like:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">RingZipper</span> a <span class="fu">=</span> <span class="dt">RingZipper</span> {
+<span class="ot">  rzvals ::</span> [a],<span class="ot"> rzix ::</span> <span class="dt">Int</span>
+} <span class="kw">deriving</span>(<span class="dt">Eq</span>, <span class="dt">Ord</span>)
+
+<span class="kw">instance</span> <span class="dt">Functor</span> <span class="dt">RingZipper</span> <span class="kw">where</span>
+    fmap f rz <span class="fu">=</span>  <span class="dt">RingZipper</span> {
+        rzvals <span class="fu">=</span> fmap f (rzvals rz),
+        rzix <span class="fu">=</span> rzix rz
+    }
+</code></pre></div>
+<p>We're going to imagine that this already has a <code>Comonad</code> instance, and we're simply waiting to write rules for this. So, the rules we want to write are these:</p>
+<ul>
+<li>We have a cell which contains a particular color, which we represent with an <code>Int</code>.</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Cell</span> <span class="fu">=</span> <span class="dt">Cell</span> {<span class="ot"> cv ::</span> <span class="dt">Int</span> }</code></pre></div>
+<p>Our full simulation, called as <code>CA</code> since it's our cellular automata consists of these cells arranged in a circular universe.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">CA</span> <span class="fu">=</span> <span class="dt">RingZipper</span> <span class="dt">Cell</span></code></pre></div>
+<p><code>stepCell</code> takes as input a <code>CA</code>, which remember is a circular universe that is <em>focused</em> at a given location, and then tells us how to produce the next <em>focused</em> cell.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | Number of colors</span>
+<span class="ot">cyclic1dTypes ::</span> <span class="dt">Int</span>;
+cyclic1dTypes <span class="fu">=</span> <span class="dv">4</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | Update rule</span>
+<span class="ot">stepCell ::</span> <span class="dt">CA</span> <span class="ot">-&gt;</span> <span class="dt">Cell</span>
+stepCell ca <span class="fu">=</span> cell&#39;
+ <span class="kw">where</span>
+  cell <span class="fu">=</span> extract ca  <span class="co">-- extract current cell</span>
+  <span class="co">-- | if we have a neighbour of the adjacent color,</span>
+  cell&#39; <span class="fu">=</span> <span class="kw">if</span> hasNextNeighbour ca 
+     <span class="co">-- | Then become that color</span>
+     <span class="kw">then</span> <span class="dt">Cell</span> { cv <span class="fu">=</span> (cv cell <span class="fu">+</span> <span class="dv">1</span>) <span class="ot">`mod`</span> cyclic1dTypes }
+     <span class="co">-- | Otherwise, remain the same</span>
+     <span class="kw">else</span> cell
+
+<span class="co">-- | extract left and right neighbour from a cell.</span>
+<span class="ot">neighbours ::</span> <span class="dt">CA</span> <span class="ot">-&gt;</span> [<span class="dt">Cell</span>]
+neighbours ca <span class="fu">=</span> [extract <span class="fu">$</span> shiftLeft ca, extract <span class="fu">$</span> shiftRight ca]</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | Check if any neighbour has value that is next</span>
+<span class="co">-- to ours</span>
+hasNextNeighbour <span class="dt">CA</span> <span class="ot">-&gt;</span> <span class="dt">Bool</span>
+hasNextNeighbour ca <span class="fu">=</span> 
+   <span class="kw">let</span> nextTy <span class="fu">=</span> ((cv cell) <span class="fu">+</span> <span class="dv">1</span>) <span class="ot">`mod`</span> cyclic1dTypes
+   <span class="kw">in</span> any (\c <span class="ot">-&gt;</span> cv c <span class="fu">==</span> nextTy) 
+      (neighbours ca)</code></pre></div>
+<p>The ring zipper structure is given by:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="ot">makeRingZipperM ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> m a <span class="ot">-&gt;</span> m (<span class="dt">RingZipper</span> a)
+makeRingZipperM n f <span class="fu">=</span> <span class="kw">do</span>
+    vals <span class="ot">&lt;-</span> replicateM n f
+    return <span class="fu">$</span> <span class="dt">RingZipper</span> {
+        rzvals<span class="fu">=</span>vals, 
+        rzix<span class="fu">=</span><span class="dv">0</span>
+    }</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">shiftLeft ::</span> <span class="dt">RingZipper</span> a <span class="ot">-&gt;</span> <span class="dt">RingZipper</span> a
+shiftLeft (<span class="dt">RingZipper</span> rzvals rzix) <span class="fu">=</span> 
+  <span class="dt">RingZipper</span> rzvals  ((rzix <span class="fu">-</span> <span class="dv">1</span>) <span class="ot">`mod`</span> (length rzvals))
+
+<span class="ot">shiftRight ::</span> <span class="dt">RingZipper</span> a <span class="ot">-&gt;</span> <span class="dt">RingZipper</span> a
+shiftRight (<span class="dt">RingZipper</span> rzvals rzix) <span class="fu">=</span> 
+  <span class="dt">RingZipper</span> rzvals  ((rzix <span class="fu">+</span> <span class="dv">1</span>) <span class="ot">`mod`</span> (length rzvals))
+
+
+<span class="kw">instance</span> <span class="dt">Comonad</span> <span class="dt">RingZipper</span> <span class="kw">where</span>
+    extract rz <span class="fu">=</span> (rzvals rz) <span class="fu">!!</span> (rzix rz)
+
+    duplicate (<span class="dt">RingZipper</span> rzvals rzix) <span class="fu">=</span> <span class="dt">RingZipper</span> {
+        rzvals <span class="fu">=</span> [<span class="dt">RingZipper</span> rzvals i <span class="fu">|</span> i <span class="ot">&lt;-</span> [<span class="dv">0</span><span class="fu">..</span>(length rzvals)<span class="fu">-</span><span class="dv">1</span>]],
+        rzix <span class="fu">=</span> rzix
+    }</code></pre></div>
+<h2 id="drawing-code">Drawing code</h2>
+<p>This is the part that interfaces with the <code>diagrams</code> library to draw these cellular automata.</p>
+<p>We first declare that we are using the <code>Cairo</code> library to perform rendering.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">MyBackend</span> <span class="fu">=</span> <span class="dt">Cairo</span></code></pre></div>
+<p>Given a CA to draw, we draw each cell with <code>renderCell</code>, and then we concatenate all the cells with (<code>|||</code>).</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">renderCA ::</span> <span class="dt">CA</span> <span class="ot">-&gt;</span> <span class="dt">QDiagram</span> <span class="dt">MyBackend</span> <span class="dt">V2</span> (<span class="dt">N</span> <span class="dt">MyBackend</span>) <span class="dt">Any</span>
+renderCA rz <span class="fu">=</span> foldr1 (<span class="fu">|||</span>) (map renderCell <span class="fu">$</span> (rzvals rz))</code></pre></div>
+<p><code>renderCell</code> draws thin rectangles for each cells (width=1, height=4) with different colors chosen from a palette.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">renderCell ::</span> <span class="dt">Cell</span> <span class="ot">-&gt;</span> <span class="dt">QDiagram</span> <span class="dt">MyBackend</span> <span class="dt">V2</span> <span class="dt">Double</span> <span class="dt">Any</span>
+renderCell <span class="dt">Cell</span>{cv<span class="fu">=</span><span class="dv">0</span>, <span class="fu">..</span>}  <span class="fu">=</span> (rect <span class="dv">1</span> <span class="dv">4</span><span class="fu">#</span> fc (sRGB24read <span class="st">&quot;#1abc9c&quot;</span>))
+renderCell <span class="dt">Cell</span>{cv<span class="fu">=</span><span class="dv">1</span>, <span class="fu">..</span>} <span class="fu">=</span> (rect <span class="dv">1</span> <span class="dv">4</span> <span class="fu">#</span> fc (sRGB24read <span class="st">&quot;#f1c40f&quot;</span>))
+renderCell <span class="dt">Cell</span>{cv<span class="fu">=</span><span class="dv">2</span>, <span class="fu">..</span>} <span class="fu">=</span> (rect <span class="dv">1</span> <span class="dv">4</span> <span class="fu">#</span> fc (sRGB24read <span class="st">&quot;#e67e22&quot;</span>))
+renderCell <span class="dt">Cell</span>{cv<span class="fu">=</span><span class="dv">3</span>, <span class="fu">..</span>} <span class="fu">=</span> (rect <span class="dv">1</span> <span class="dv">4</span> <span class="fu">#</span> fc (sRGB24read <span class="st">&quot;#9b59b6&quot;</span>))
+renderCell <span class="dt">Cell</span>{cv<span class="fu">=</span><span class="dv">4</span>, <span class="fu">..</span>} <span class="fu">=</span> (rect <span class="dv">1</span> <span class="dv">4</span> <span class="fu">#</span> fc (sRGB24read <span class="st">&quot;#2c3e50&quot;</span>))
+renderCell <span class="dt">Cell</span>{<span class="fu">..</span>} <span class="fu">=</span> square <span class="dv">1</span> <span class="fu">#</span> fc (sRGB f (<span class="fl">1.0</span> <span class="fu">-</span> f) <span class="fl">0.0</span>) <span class="kw">where</span>
+                            f <span class="fu">=</span> (fromIntegral cv <span class="fu">/</span> fromIntegral cyclic1dTypes)</code></pre></div>
+<p>Given a CA, to render a GIF, we create next states by iterating <code>cobind stepCell</code>. We then invoke the diagram's API to create a list of rendered steps by mapping <code>renderCA</code> over the steps.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">GifDelay</span> <span class="fu">=</span> <span class="dt">Int</span>
+<span class="ot">renderGif ::</span> <span class="dt">CA</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [(<span class="dt">QDiagram</span> <span class="dt">MyBackend</span> <span class="dt">V2</span> (<span class="dt">N</span> <span class="dt">MyBackend</span>) <span class="dt">Any</span>, <span class="dt">GifDelay</span>)]
+renderGif ca n <span class="fu">=</span> zip renderedSteps [<span class="dv">5</span><span class="fu">..</span>] <span class="kw">where</span>
+    renderedSteps <span class="fu">=</span> map renderCA cas
+    cas <span class="fu">=</span> take n <span class="fu">$</span> iterate (cobind stepCell) ca</code></pre></div>
+<p>Finally, to setup our starting board, we generate a random cell with <code>mkCell</code>, and create a random CA by making random cells at <code>mkCA</code>.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">cyclic1dDim <span class="fu">=</span> <span class="dv">200</span>
+<span class="ot">mkCell ::</span> <span class="dt">IO</span> <span class="dt">Cell</span>
+mkCell <span class="fu">=</span> <span class="kw">do</span>
+  newStdGen
+  val <span class="ot">&lt;-</span> getStdRandom (randomR (<span class="dv">0</span>, cyclic1dTypes))<span class="ot"> ::</span> <span class="dt">IO</span> <span class="dt">Int</span>
+  return <span class="fu">$</span> <span class="dt">Cell</span> val
+
+<span class="ot">mkCA ::</span> <span class="dt">IO</span> (<span class="dt">CA</span>)
+mkCA <span class="fu">=</span> <span class="kw">do</span>
+  rz <span class="ot">&lt;-</span> makeRingZipperM cyclic1dDim mkCell
+  return <span class="fu">$</span> rz</code></pre></div>
+<p>We put everything together; we create a new CA with <code>mkCA</code>, create the gif with <code>renderGif</code>, and finally pass our GIF to diagrams with <code>gifMain</code>.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">main ::</span> <span class="dt">IO</span> ()
+main <span class="fu">=</span> <span class="kw">do</span>
+  start <span class="ot">&lt;-</span> mkCA
+  <span class="kw">let</span> nsteps <span class="fu">=</span> <span class="dv">100</span>
+  gifMain <span class="fu">$</span> (renderGif start nsteps)</code></pre></div>
+<p>To run the executable and produce the <code>gif</code>, clone the repo <a href="">bollu/koans</a>, enter into the <code>cellular</code> folder and run with:</p>
+<pre><code>koans/cellular$ cabal build
+koans/cellular$ cabal exec cellular -- -w1024 -h400  -o cellular.gif</code></pre>
+</body>
+</html>
