@@ -190,9 +190,10 @@ is *focused* at a given location, and then tells us how to produce the next
 
 > -- | Check if any neighbour has value that is next
 > -- to ours
-> hasNextNeighbour CA -> Bool
+> hasNextNeighbour :: CA -> Bool
 > hasNextNeighbour ca = 
->    let nextTy = ((cv cell) + 1) `mod` cyclic1dTypes
+>    let cell = extract ca
+>        nextTy = ((cv cell) + 1) `mod` cyclic1dTypes
 >    in any (\c -> cv c == nextTy) 
 >       (neighbours ca)
 
@@ -243,11 +244,12 @@ We first declare that we are using the `Cairo` library to perform rendering.
 > type MyBackend = Cairo
 
 Given a CA to draw, we draw each cell with `renderCell`, and then we concatenate all 
-the cells with (`|||`).
+the cells with (`|||`)
 
 
 > renderCA :: CA -> QDiagram MyBackend V2 (N MyBackend) Any
-> renderCA rz = foldr1 (|||) (map renderCell $ (rzvals rz))
+> renderCA rz = 
+>  (foldr1 (|||) (map renderCell $ (rzvals rz)))
 
 
 `renderCell` draws thin rectangles for each cells (width=1, height=4) with

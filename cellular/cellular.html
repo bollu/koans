@@ -158,9 +158,10 @@ stepCell ca <span class="fu">=</span> cell&#39;
 neighbours ca <span class="fu">=</span> [extract <span class="fu">$</span> shiftLeft ca, extract <span class="fu">$</span> shiftRight ca]</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | Check if any neighbour has value that is next</span>
 <span class="co">-- to ours</span>
-hasNextNeighbour <span class="dt">CA</span> <span class="ot">-&gt;</span> <span class="dt">Bool</span>
+<span class="ot">hasNextNeighbour ::</span> <span class="dt">CA</span> <span class="ot">-&gt;</span> <span class="dt">Bool</span>
 hasNextNeighbour ca <span class="fu">=</span> 
-   <span class="kw">let</span> nextTy <span class="fu">=</span> ((cv cell) <span class="fu">+</span> <span class="dv">1</span>) <span class="ot">`mod`</span> cyclic1dTypes
+   <span class="kw">let</span> cell <span class="fu">=</span> extract ca
+       nextTy <span class="fu">=</span> ((cv cell) <span class="fu">+</span> <span class="dv">1</span>) <span class="ot">`mod`</span> cyclic1dTypes
    <span class="kw">in</span> any (\c <span class="ot">-&gt;</span> cv c <span class="fu">==</span> nextTy) 
       (neighbours ca)</code></pre></div>
 <p>The ring zipper structure is given by:</p>
@@ -192,9 +193,10 @@ shiftRight (<span class="dt">RingZipper</span> rzvals rzix) <span class="fu">=</
 <p>This is the part that interfaces with the <code>diagrams</code> library to draw these cellular automata.</p>
 <p>We first declare that we are using the <code>Cairo</code> library to perform rendering.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">MyBackend</span> <span class="fu">=</span> <span class="dt">Cairo</span></code></pre></div>
-<p>Given a CA to draw, we draw each cell with <code>renderCell</code>, and then we concatenate all the cells with (<code>|||</code>).</p>
+<p>Given a CA to draw, we draw each cell with <code>renderCell</code>, and then we concatenate all the cells with (<code>|||</code>)</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">renderCA ::</span> <span class="dt">CA</span> <span class="ot">-&gt;</span> <span class="dt">QDiagram</span> <span class="dt">MyBackend</span> <span class="dt">V2</span> (<span class="dt">N</span> <span class="dt">MyBackend</span>) <span class="dt">Any</span>
-renderCA rz <span class="fu">=</span> foldr1 (<span class="fu">|||</span>) (map renderCell <span class="fu">$</span> (rzvals rz))</code></pre></div>
+renderCA rz <span class="fu">=</span> 
+ (foldr1 (<span class="fu">|||</span>) (map renderCell <span class="fu">$</span> (rzvals rz)))</code></pre></div>
 <p><code>renderCell</code> draws thin rectangles for each cells (width=1, height=4) with different colors chosen from a palette.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">renderCell ::</span> <span class="dt">Cell</span> <span class="ot">-&gt;</span> <span class="dt">QDiagram</span> <span class="dt">MyBackend</span> <span class="dt">V2</span> <span class="dt">Double</span> <span class="dt">Any</span>
 renderCell <span class="dt">Cell</span>{cv<span class="fu">=</span><span class="dv">0</span>, <span class="fu">..</span>}  <span class="fu">=</span> (rect <span class="dv">1</span> <span class="dv">4</span><span class="fu">#</span> fc (sRGB24read <span class="st">&quot;#1abc9c&quot;</span>))
