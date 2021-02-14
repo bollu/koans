@@ -125,16 +125,13 @@ one particular element that's currently focused. Concretely, it looks like:
 
 
 > data RingZipper a = RingZipper {
->     before :: [a],
->     focus  :: a,
->     after  :: [a]
+>   rzvals :: [a], rzix :: Int
 > } deriving(Eq, Ord)
 > 
 > instance Functor RingZipper where
->     fmap f RingZipper{..} = RingZipper {
->         before = fmap f before,
->         focus = f focus,
->         after = fmap f after
+>     fmap f rz =  RingZipper {
+>         rzvals = fmap f (rzvals rz),
+>         rzix = rzix rz
 >     }
 > 
 > 
@@ -147,7 +144,6 @@ these:
 - We have a cell which contains a particular color, which we represent with an `Int`.
 
 
-> 
 > data Cell = Cell { cv :: Int }
 
 
@@ -166,105 +162,51 @@ of these cells arranged in a circular universe.
 is *focused* at a given location, and then tells us how to produce the next
 *focused* cell.
 
+> cyclic1dTypes :: Int; cyclic1dTypes = 4
 
 > stepCell :: CA -> Cell
 > stepCell s = cell'
 >     where
 >         cell = extract s  -- extract neighbour
 >         cell' = if hasNextNeighbour (neighbours s)
->            then Cell { cv = (cv cell + 1) `mod` ctot }
+>            then Cell { cv = (cv cell + 1) `mod` cyclic1dTypes }
 >            else cell
->         hasNextNeighbour neighbours = any (\c -> cv c == ((cv cell) + 1) `mod` ctot) neighbours
+>         hasNextNeighbour neighbours = any (\c -> cv c == ((cv cell) + 1) `mod` cyclic1dTypes) neighbours
 > 
 > -- | extract left and right neighbour from a cell.
 > neighbours :: RingZipper a -> [a]
 > neighbours z = [extract $ shiftLeft z, extract $ shiftRight z]
 
 
-> 
+The ring zipper structure is given by:
+
 > 
 > makeRingZipperM :: Monad m => Int -> m a -> m (RingZipper a)
 > makeRingZipperM n f = do
->     let mid = n `div` 2
->     before <- replicateM (mid - 1) f
->     after <- replicateM (n - mid + 1) f
->     focus <- f
+>     vals <- replicateM n f
 >     return $ RingZipper {
->         before=before, 
->         focus=focus,
->         after=after
+>         rzvals=vals, 
+>         rzix=0
 >     }
 >
-> lengthRingZipper :: RingZipper a -> Int
-> lengthRingZipper z = length (before z) + 1 + length (after z)
-> 
-> focusIndexRingZipper :: RingZipper a -> Int
-> focusIndexRingZipper z = length (before z)
-> 
-> mergeRingZipper :: RingZipper a -> [a]
-> mergeRingZipper z =  before z <> [focus z] <> after z
-> 
-> 
+
 > shiftLeft :: RingZipper a -> RingZipper a
-> shiftLeft z = RingZipper {
->         before = before',
->         focus = focus',
->         after = after'
->     }
->     where
->         merged = mergeRingZipper z
->         focusAt' = (focusIndexRingZipper z - 1) `mod` (length merged)
->         
->         focus' = merged !!  focusAt'
->         before' =   
->             if null (before z)
->                 then init merged
->                 else before z
->         after' = 
->             if null (before z)
->                 then []
->                 else cons (focus z) (after z)
-> 
+> shiftLeft (RingZipper rzvals rzix) = 
+>   RingZipper rzvals  ((rzix - 1) `mod` (length rzvals))
 > 
 > shiftRight :: RingZipper a -> RingZipper a
-> shiftRight z = RingZipper {
->         before = before',
->         focus = focus',
->         after = after'
->     }
->     where
->         merged  = mergeRingZipper z
->         focusAt' = (focusIndexRingZipper z + 1) `mod` (length merged)
->         
->         focus' = merged !! focusAt'
->         before' =   
->             if null (after z)
->                 then []
->                 else snoc (before z) (focus z)
->         after' = 
->             if null (after z)
->                 then tail merged
->                 else tail (after z)
+> shiftRight (RingZipper rzvals rzix) = 
+>   RingZipper rzvals  ((rzix + 1) `mod` (length rzvals))
 > 
-> 
-> iterate1 :: (a -> a) -> a -> [a]
-> iterate1 f x = iterate f (f x)
 > 
 > instance Comonad RingZipper where
->     extract RingZipper {..} = focus
+>     extract rz = (rzvals rz) !! (rzix rz)
 > 
->     duplicate z = RingZipper {
->         before = before,
->         focus = z,
->         after = after
->     } where
->         focusAt = focusIndexRingZipper z
->         before = reverse $ iterateN focusAt shiftLeft (shiftLeft z)
->         after = iterateN (lengthRingZipper z - focusAt - 1) shiftRight (shiftRight z)
+>     duplicate (RingZipper rzvals rzix) = RingZipper {
+>         rzvals = [RingZipper rzvals i | i <- [0..(length rzvals)-1]],
+>         rzix = rzix
+>     }
 > 
-> 
-> 
-> ctot :: Int; ctot = 5
 
 
 
@@ -276,48 +218,68 @@ This is the part that interfaces with the `diagrams` library to draw these
 cellular automata.
 
 
+We first declare that we are using the `Cairo` library to perform rendering.
 
 
 > type MyBackend = Cairo
-> renderCA :: CA -> QDiagram MyBackend V2 (N MyBackend) Any
-> renderCA rz = foldr1 (|||) (map cellToDiagram $ (mergeRingZipper rz))
 
-> cellToDiagram :: Cell -> QDiagram MyBackend V2 Double Any
-> cellToDiagram Cell{cv=0, ..}  = (rect 1 4# fc (sRGB24read "#1abc9c"))
-> cellToDiagram Cell{cv=1, ..} = (rect 1 4 # fc (sRGB24read "#f1c40f"))
-> cellToDiagram Cell{cv=2, ..} = (rect 1 4 # fc (sRGB24read "#e67e22"))
-> cellToDiagram Cell{cv=3, ..} = (rect 1 4 # fc (sRGB24read "#9b59b6"))
-> cellToDiagram Cell{cv=4, ..} = (rect 1 4 # fc (sRGB24read "#2c3e50"))
-> cellToDiagram Cell{..} = square 1 # fc (sRGB f (1.0 - f) 0.0) where
->                             f = (fromIntegral cv / fromIntegral ctot)
-> 
+Given a CA to draw, we draw each cell with `renderCell`, and then we concatenate all 
+the cells with (`|||`).
+
+
+> renderCA :: CA -> QDiagram MyBackend V2 (N MyBackend) Any
+> renderCA rz = foldr1 (|||) (map renderCell $ (rzvals rz))
+
+
+`renderCell` draws thin rectangles for each cells (width=1, height=4) with
+different colors chosen from a palette.
+
+
+> renderCell :: Cell -> QDiagram MyBackend V2 Double Any
+> renderCell Cell{cv=0, ..}  = (rect 1 4# fc (sRGB24read "#1abc9c"))
+> renderCell Cell{cv=1, ..} = (rect 1 4 # fc (sRGB24read "#f1c40f"))
+> renderCell Cell{cv=2, ..} = (rect 1 4 # fc (sRGB24read "#e67e22"))
+> renderCell Cell{cv=3, ..} = (rect 1 4 # fc (sRGB24read "#9b59b6"))
+> renderCell Cell{cv=4, ..} = (rect 1 4 # fc (sRGB24read "#2c3e50"))
+> renderCell Cell{..} = square 1 # fc (sRGB f (1.0 - f) 0.0) where
+>                             f = (fromIntegral cv / fromIntegral cyclic1dTypes)
+
+
+Given a CA, to render a GIF, we create next states by iterating `cobind stepCell`.
+We then invoke the diagram's API to create a list of rendered steps by
+mapping `renderCA` over the steps.
+
+> type GifDelay = Int
+> renderGif :: CA -> Int -> [(QDiagram MyBackend V2 (N MyBackend) Any, GifDelay)]
+> renderGif ca n = zip renderedSteps [5..] where
+>     renderedSteps = map renderCA cas
+>     cas = take n $ iterate (cobind stepCell) ca
+                                                             
+Finally, to setup our starting board, we generate a random cell with `mkCell`,
+and create a random CA by making random cells at `mkCA`. 
+
 > cyclic1dDim = 200
-> cyclic1dTypes = 5
-> 
 > mkCell :: IO Cell
 > mkCell = do
 >   newStdGen
 >   val <- getStdRandom (randomR (0, cyclic1dTypes)) :: IO Int
 >   return $ Cell val
 > 
-> mkStart :: IO (CA)
-> mkStart = do
+> mkCA :: IO (CA)
+> mkCA = do
 >   rz <- makeRingZipperM cyclic1dDim mkCell
 >   return $ rz
 > 
-> 
-> type GifDelay = Int
-> mkCAGif :: CA -> Int -> [(QDiagram MyBackend V2 (N MyBackend) Any, GifDelay)]
-> mkCAGif ca n = zip renderedSteps [5..] where
->     renderedSteps = map renderCA cas
->     cas = take n $ iterate (cobind stepCell) ca
-> 
+
+We put everything together; we create a new CA with `mkCA`, create the gif with `renderGif`,
+and finally pass our GIF to diagrams with `gifMain`.
+
 > main :: IO ()
 > main = do
->   start <- mkStart
+>   start <- mkCA
 >   let nsteps = 100
->   gifMain $ (mkCAGif start nsteps)
+>   gifMain $ (renderGif start nsteps)
 
 
 
-- [I] /home/bollu/work/functionalworks > cabal build && cabal exec cellular -- -w 512 -h30 -o foo.gif
+- [I] /home/bollu/work/functionalworks > cabal build && cabal exec cellular -- -w 1024 -h400  -o foo.gif
