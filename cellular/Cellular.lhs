@@ -1,9 +1,11 @@
-> {-# LANGUAGE RecordWildCards #-}
-> {-# LANGUAGE NoMonomorphismRestriction #-}
-> {-# LANGUAGE FlexibleContexts          #-}
-> {-# LANGUAGE TypeFamilies              #-}
-> {-# LANGUAGE PartialTypeSignatures #-}
-> 
+At the end of this blog post, we'll know how to render pretty 
+cellular automata such as these:
+
+and the really cool algebraic structure that these possess! They turn
+out to be the _dual_ of a `monad`, known as a comonad.
+
+First, our magic incantations:
+
 > module Main where
 > -- import qualified Data.Vector as V
 > import Control.Monad
@@ -18,16 +20,91 @@
 > import Diagrams.Backend.Cairo
 > import Diagrams.TwoD
 > import System.Random
-> 
-> type MyBackend = Cairo
-> 
+
+
+As stated before, this simulation uses the `Comonad` typeclass to model
+cellular automata. There are multiple ways of looking at this algebra, and one
+way to think of them is a structure that can automatically convert
+"global-to-local" transforms into "global-to-global" transforms.
+
+
+For example, in a cellular automata, the "global-to-local" transformation is
+updating the state of _one_ Cell by reading the cell's neighbours.
+The neighbour state is the global state, which is used to update the local
+state of the cell. This can be thought of as the type
+
+```haskell
+Grid -> Cell
+```
+
+
+where `Grid` is the grid in which the cellular automata is running, and `Cell`
+is the new state of the cell. However, the question that immediately arises is
+- which cell? the answer is that, the `Grid` not only encodes the state of the
+cellular automata, but also a __focused cell__ which is updated.
+
+
+The `Grid` is not just a grid, it is a grid with a cell that it is targeted on.
+However, this seems ridiculous, since we have simply added extra complexity
+(that of focusing on a particular cell) with zero gains in benefit. 
+
+
+
+The nice part of a `Comonad` is that if we have a structure that knows how to do a "focused update", the `Comonad` enables us to extend this
+to the entire structure.
+Written in types, it is along the lines of
+
+```haskell
+Grid -> (Grid -> Cell) -> Grid
+```
+
+If we think of grid as a container of cells (or as a functor `w`), this gives us the new type
+```haskell
+Grid -> (Grid -> Cell) -> Grid
+-- replace Grid with w Cell
+w Cell -> (w Cell -> Cell) -> w Cell
+-- replace Cell with type variable a
+w a -> (w a -> a) -> w a
+-- generalize type even further, by allowing the
+-- output type to differ
+-- (this is shown to be possible with an implementation later on)
+w a -> (w a -> b) -> w b
+```
+Note that this rewrite exploited the fact that a `Grid` is simply a functor (collection) of `Cell`s, and then used this to 
+rewrite the type signature.
+
+
+The type signature
+```haskell
+w a -> (w a -> b) -> w b
+```
+can be sharply contrasted with the monadic `>>= (bind)` as 
+```haskell
+>>= :: m a -> (a -> m b) -> m b
+```
+
+Indeed, these structures are dual, which is why there are called as `Comonad`, which is also why I
+picked `w` as the symbol for `Comonad` (which is an upside-down `m` for `Monad`). It is usually called as "cobind", and is
+written as
+```haskell
+=>> :: w a -> (w a -> b) -> w b
+```                     
+with the interpretation that it takes a global structure `w a` which is focused on some `a` in the `w a`, and then
+takes a transform that updates the focused `a` in the `w a ` to a `b`. Given these two pieces of information, the
+Comonad automatically updates every single `a`, to produce an updated `w b`.
+
 > class Functor w => Comonad w where
 >   extract :: w a -> a
 >   duplicate :: w a -> w (w a)
 >   cobind :: (w a -> b) -> w a -> w b
 >   cobind f = fmap f . duplicate
 > 
-> type Dim = Int
+
+The particular comonad that we will be needing for our cellular automata is
+known as a `RingZipper`. This is a data structure that provides us access
+to a circular arrangement of elements, with one particular element that's
+currently focused. Concretely, it looks like:
+
 > data RingZipper a = RingZipper {
 >     before :: [a],
 >     focus  :: a,
@@ -41,26 +118,39 @@
 >         after = fmap f after
 >     }
 > 
-> instance Show a => Show (RingZipper a) where
->     show z = 
->       "|"<> showElems (before z) 
->          <> showCenter (focus z) 
->          <> showElems (after z) 
->          <> "|" where
->             showElems l = intercalate " " (map show l)
->             showCenter x = " (" <> show x <> ")  "
 > 
-> lengthRingZipper :: RingZipper a -> Int
-> lengthRingZipper z = length (before z) + 1 + length (after z)
+
+We're going to imagine that this already has a `Comonad` instance, and we're
+simply waiting to write rules for this. So, the rules we want to write are
+these:
+
+- We have a cell which contains a particular color, which we represent with an `Int`.
 > 
-> focusIndexRingZipper :: RingZipper a -> Int
-> focusIndexRingZipper z = length (before z)
+> data Cell = Cell { cv :: Int }
+
+Our full simulation, called as `CA` since it's our cellular automata consists
+of these cells arranged in a circular universe.
+
+> type CA = RingZipper Cell
+
+
+`stepCell` takes as input a `CA`, which remember is a circular universe that
+is *focused* at a given location, and then tells us how to produce the next
+*focused* cell.
+
+> stepCell :: CA -> Cell
+> stepCell s = cell'
+>     where
+>         cell = extract s  -- extract neighbour
+>         cell' = if hasNextNeighbour (neighbours s)
+>            then Cell { cv = (cv cell + 1) `mod` ctot }
+>            else cell
+>         hasNextNeighbour neighbours = any (\c -> cv c == ((cv cell) + 1) `mod` ctot) neighbours
 > 
-> mergeRingZipper :: RingZipper a -> [a]
-> mergeRingZipper z =  before z <> [focus z] <> after z
-> 
+> -- | extract left and right neighbour from a cell.
 > neighbours :: RingZipper a -> [a]
 > neighbours z = [extract $ shiftLeft z, extract $ shiftRight z]
+
 > 
 > 
 > makeRingZipperM :: Monad m => Dim -> m a -> m (RingZipper a)
@@ -74,6 +164,15 @@
 >         focus=focus,
 >         after=after
 >     }
+>
+> lengthRingZipper :: RingZipper a -> Int
+> lengthRingZipper z = length (before z) + 1 + length (after z)
+> 
+> focusIndexRingZipper :: RingZipper a -> Int
+> focusIndexRingZipper z = length (before z)
+> 
+> mergeRingZipper :: RingZipper a -> [a]
+> mergeRingZipper z =  before z <> [focus z] <> after z
 > 
 > 
 > shiftLeft :: RingZipper a -> RingZipper a
@@ -136,22 +235,16 @@
 > 
 > 
 > ctot :: Int; ctot = 5
-> 
-> data Cell = Cell { cv :: Int }
-> type Cyclic1D = RingZipper Cell
-> 
-> stepCell :: Cyclic1D -> Cell
-> stepCell s = cell'
->     where
->         cell = extract s 
->         cell' = if hasNextNeighbour (neighbours s)
->            then Cell { cv = (cv cell + 1) `mod` ctot }
->            else cell
->         hasNextNeighbour neighbours = any (\c -> cv c == ((cv cell) + 1) `mod` ctot) neighbours
-> 
-> renderCA :: Cyclic1D -> QDiagram MyBackend V2 (N MyBackend) Any
+
+
+#### Drawing code
+
+This is the part that interfaces with the `diagrams` library to draw these
+cellular automata.
+
+> renderCA :: CA -> QDiagram MyBackend V2 (N MyBackend) Any
 > renderCA rz = foldr1 (|||) (map cellToDiagram $ (mergeRingZipper rz))
-> 
+
 > cellToDiagram :: Cell -> QDiagram MyBackend V2 Double Any
 > cellToDiagram Cell{cv=0, ..}  = (rect 1 4# fc (sRGB24read "#1abc9c"))
 > cellToDiagram Cell{cv=1, ..} = (rect 1 4 # fc (sRGB24read "#f1c40f"))
@@ -170,14 +263,14 @@
 >   val <- getStdRandom (randomR (0, cyclic1dTypes)) :: IO Int
 >   return $ Cell val
 > 
-> mkStart :: IO (Cyclic1D)
+> mkStart :: IO (CA)
 > mkStart = do
 >   rz <- makeRingZipperM cyclic1dDim mkCell
 >   return $ rz
 > 
 > 
 > type GifDelay = Int
-> mkCAGif :: Cyclic1D -> Int -> [(QDiagram MyBackend V2 (N MyBackend) Any, GifDelay)]
+> mkCAGif :: CA -> Int -> [(QDiagram MyBackend V2 (N MyBackend) Any, GifDelay)]
 > mkCAGif ca n = zip renderedSteps [5..] where
 >     renderedSteps = map renderCA cas
 >     cas = take n $ iterate (cobind stepCell) ca
