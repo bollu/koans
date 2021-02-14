@@ -1,11 +1,19 @@
 At the end of this blog post, we'll know how to render pretty 
 cellular automata such as these:
 
+<img src="TODO">
+
 and the really cool algebraic structure that these possess! They turn
-out to be the _dual_ of a `monad`, known as a comonad.
+out to be the _dual_ of a `monad`, known as a `comonad`.
 
 First, our magic incantations:
 
+> {-# LANGUAGE RecordWildCards #-}
+> {-# LANGUAGE NoMonomorphismRestriction #-}
+> {-# LANGUAGE FlexibleContexts          #-}
+> {-# LANGUAGE TypeFamilies              #-}
+> {-# LANGUAGE PartialTypeSignatures #-}
+> 
 > module Main where
 > -- import qualified Data.Vector as V
 > import Control.Monad
@@ -93,6 +101,7 @@ with the interpretation that it takes a global structure `w a` which is focused 
 takes a transform that updates the focused `a` in the `w a ` to a `b`. Given these two pieces of information, the
 Comonad automatically updates every single `a`, to produce an updated `w b`.
 
+
 > class Functor w => Comonad w where
 >   extract :: w a -> a
 >   duplicate :: w a -> w (w a)
@@ -100,10 +109,12 @@ Comonad automatically updates every single `a`, to produce an updated `w b`.
 >   cobind f = fmap f . duplicate
 > 
 
+
 The particular comonad that we will be needing for our cellular automata is
 known as a `RingZipper`. This is a data structure that provides us access
 to a circular arrangement of elements, with one particular element that's
 currently focused. Concretely, it looks like:
+
 
 > data RingZipper a = RingZipper {
 >     before :: [a],
@@ -120,23 +131,33 @@ currently focused. Concretely, it looks like:
 > 
 > 
 
+
 We're going to imagine that this already has a `Comonad` instance, and we're
 simply waiting to write rules for this. So, the rules we want to write are
 these:
 
 - We have a cell which contains a particular color, which we represent with an `Int`.
+
+
 > 
 > data Cell = Cell { cv :: Int }
+
+
 
 Our full simulation, called as `CA` since it's our cellular automata consists
 of these cells arranged in a circular universe.
 
+
+
 > type CA = RingZipper Cell
+
+
 
 
 `stepCell` takes as input a `CA`, which remember is a circular universe that
 is *focused* at a given location, and then tells us how to produce the next
 *focused* cell.
+
 
 > stepCell :: CA -> Cell
 > stepCell s = cell'
@@ -150,6 +171,7 @@ is *focused* at a given location, and then tells us how to produce the next
 > -- | extract left and right neighbour from a cell.
 > neighbours :: RingZipper a -> [a]
 > neighbours z = [extract $ shiftLeft z, extract $ shiftRight z]
+
 
 > 
 > 
@@ -237,10 +259,15 @@ is *focused* at a given location, and then tells us how to produce the next
 > ctot :: Int; ctot = 5
 
 
+
+
 #### Drawing code
 
 This is the part that interfaces with the `diagrams` library to draw these
 cellular automata.
+
+
+
 
 > renderCA :: CA -> QDiagram MyBackend V2 (N MyBackend) Any
 > renderCA rz = foldr1 (|||) (map cellToDiagram $ (mergeRingZipper rz))
@@ -280,6 +307,7 @@ cellular automata.
 >   start <- mkStart
 >   let nsteps = 100
 >   gifMain $ (mkCAGif start nsteps)
+
 
 
 - [I] /home/bollu/work/functionalworks > cabal build && cabal exec cellular -- -w 512 -h30 -o foo.gif
