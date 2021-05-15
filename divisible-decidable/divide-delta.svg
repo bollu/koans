@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="201.44081mm"
+   height="112.02536mm"
+   viewBox="0 0 201.44082 112.02535"
+   version="1.1"
+   id="svg9326"
+   inkscape:version="1.0.2 (e86c870879, 2021-01-15)"
+   sodipodi:docname="divide-delta.svg"
+   inkscape:export-filename="/home/bollu/work/koans/divisible-decidable/divide-delta.png"
+   inkscape:export-xdpi="86.279999"
+   inkscape:export-ydpi="86.279999">
+  <defs
+     id="defs9320">
+    <marker
+       style="overflow:visible"
+       id="EmptyDiamondL"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="EmptyDiamondL"
+       inkscape:isstock="true">
+      <path
+         transform="scale(0.8)"
+         style="fill:#ffffff;fill-rule:evenodd;stroke:#455a64;stroke-width:1pt;stroke-opacity:1"
+         d="M 0,-7.0710768 -7.0710894,0 0,7.0710589 7.0710462,0 Z"
+         id="path999" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="marker10601"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="DotL"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(0.8,0,0,0.8,5.92,0.8)"
+         style="fill:#455a64;fill-opacity:1;fill-rule:evenodd;stroke:#455a64;stroke-width:1pt;stroke-opacity:1"
+         d="m -2.5,-1 c 0,2.76 -2.24,5 -5,5 -2.76,0 -5,-2.24 -5,-5 0,-2.76 2.24,-5 5,-5 2.76,0 5,2.24 5,5 z"
+         id="path10599" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="DotL"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="DotL"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(0.8,0,0,0.8,5.92,0.8)"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
+         d="m -2.5,-1 c 0,2.76 -2.24,5 -5,5 -2.76,0 -5,-2.24 -5,-5 0,-2.76 2.24,-5 5,-5 2.76,0 5,2.24 5,5 z"
+         id="path954" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="DiamondLend"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="DiamondLend"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(0.8,0,0,0.8,-5.6,0)"
+         style="fill:#455a64;fill-opacity:1;fill-rule:evenodd;stroke:#455a64;stroke-width:1pt;stroke-opacity:1"
+         d="M 0,-7.0710768 -7.0710894,0 0,7.0710589 7.0710462,0 Z"
+         id="path990" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="DiamondSstart"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="DiamondSstart"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(0.2,0,0,0.2,1.2,0)"
+         style="fill:#455a64;fill-opacity:1;fill-rule:evenodd;stroke:#455a64;stroke-width:1pt;stroke-opacity:1"
+         d="M 0,-7.0710768 -7.0710894,0 0,7.0710589 7.0710462,0 Z"
+         id="path987" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="marker8196"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="EmptyTriangleOutL"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(0.8,0,0,0.8,-4.8,0)"
+         style="fill:#ffffff;fill-rule:evenodd;stroke:#455a64;stroke-width:1pt;stroke-opacity:1"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path8194" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="marker8326"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="EmptyTriangleOutL"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(0.8,0,0,0.8,-4.8,0)"
+         style="fill:#ffffff;fill-rule:evenodd;stroke:#455a64;stroke-width:1pt;stroke-opacity:1"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path8324" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="EmptyTriangleOutL"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="EmptyTriangleOutL"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(0.8,0,0,0.8,-4.8,0)"
+         style="fill:#ffffff;fill-rule:evenodd;stroke:#455a64;stroke-width:1pt;stroke-opacity:1"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path1053" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="DiamondLend-1"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="DiamondLend"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(0.8,0,0,0.8,-5.6,0)"
+         style="fill:#455a64;fill-opacity:1;fill-rule:evenodd;stroke:#455a64;stroke-width:1pt;stroke-opacity:1"
+         d="M 0,-7.0710768 -7.0710894,0 0,7.0710589 7.0710462,0 Z"
+         id="path990-5" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="marker8326-6"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="EmptyTriangleOutL"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(0.8,0,0,0.8,-4.8,0)"
+         style="fill:#ffffff;fill-rule:evenodd;stroke:#455a64;stroke-width:1pt;stroke-opacity:1"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path8324-5" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="marker8196-3"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="EmptyTriangleOutL"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(0.8,0,0,0.8,-4.8,0)"
+         style="fill:#ffffff;fill-rule:evenodd;stroke:#455a64;stroke-width:1pt;stroke-opacity:1"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path8194-9" />
+    </marker>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.71356758"
+     inkscape:cx="419.14761"
+     inkscape:cy="301.87774"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="1600"
+     inkscape:window-height="818"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata9323">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-15.228772,-82.73231)">
+    <path
+       style="fill:none;stroke:#455a64;stroke-width:1.05833;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker8326-6)"
+       d="m 151.46979,106.163 16.38708,16.36989"
+       id="path5829-5-6"
+       sodipodi:nodetypes="cc"
+       inkscape:transform-center-x="3.1528326"
+       inkscape:transform-center-y="-5.233429" />
+    <path
+       style="fill:none;stroke:#455a64;stroke-width:1.05833;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker8196-3)"
+       d="m 153.63619,158.10185 16.3699,-16.38708"
+       id="path5829-4"
+       sodipodi:nodetypes="cc" />
+    <circle
+       style="fill:#2196f3;fill-opacity:1;stroke:none;stroke-width:2.33336;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path5125-06-6"
+       cx="31.088245"
+       cy="133.70331"
+       r="9.1040707" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;fill:#2196f3;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="14.923882"
+       y="137.25099"
+       id="text9996"><tspan
+         sodipodi:role="line"
+         id="tspan9994"
+         x="14.923882"
+         y="137.25099"
+         style="fill:#2196f3;fill-opacity:1;stroke-width:0.264583">x</tspan></text>
+    <path
+       style="fill:none;stroke:#455a64;stroke-width:1.05833;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker8196)"
+       d="M 38.061262,128.22625 54.431161,111.83917"
+       id="path5829"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#455a64;stroke-width:1.05833;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker8326)"
+       d="m 38.583991,138.02819 16.387083,16.36989"
+       id="path5829-5"
+       sodipodi:nodetypes="cc"
+       inkscape:transform-center-x="3.1528326"
+       inkscape:transform-center-y="-5.233429" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="18.186491"
+       y="192.55626"
+       id="text10136"><tspan
+         sodipodi:role="line"
+         id="tspan10134"
+         x="18.186491"
+         y="192.55626"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Meslo LG S DZ for Powerline';-inkscape-font-specification:'Meslo LG S DZ for Powerline';stroke-width:0.264583"><tspan
+   style="fill:#f4511e;fill-opacity:1"
+   id="tspan11266">x2ydd</tspan> = divide delta x2y x2y'</tspan></text>
+    <circle
+       style="fill:#2196f3;fill-opacity:1;stroke:none;stroke-width:2.33336;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path5125-06-6-0"
+       cx="64.17691"
+       cy="105.90643"
+       r="9.1040707" />
+    <circle
+       style="fill:#2196f3;fill-opacity:1;stroke:none;stroke-width:2.33336;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path5125-06-6-9"
+       cx="66.939491"
+       cy="157.51457"
+       r="9.1040707" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;fill:#2196f3;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="73.910728"
+       y="108.12545"
+       id="text9996-1"><tspan
+         sodipodi:role="line"
+         id="tspan9994-7"
+         x="73.910728"
+         y="108.12545"
+         style="fill:#2196f3;fill-opacity:1;stroke-width:0.264583">x</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;fill:#2196f3;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="77.171692"
+       y="163.2338"
+       id="text9996-7"><tspan
+         sodipodi:role="line"
+         id="tspan9994-1"
+         x="77.171692"
+         y="163.2338"
+         style="fill:#2196f3;fill-opacity:1;stroke-width:0.264583">x</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.5833px;line-height:1.25;font-family:'Meslo LG S DZ for Powerline';-inkscape-font-specification:'Meslo LG S DZ for Powerline';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="116.08675"
+       y="94.341995"
+       id="text5229"><tspan
+         sodipodi:role="line"
+         id="tspan5227"
+         x="116.08675"
+         y="94.341995"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Meslo LG S DZ for Powerline';-inkscape-font-specification:'Meslo LG S DZ for Powerline';stroke-width:0.264583">x2y</tspan></text>
+    <g
+       id="g11208"
+       transform="translate(2.6041304,2.3113296)">
+      <path
+         style="fill:none;stroke:#455a64;stroke-width:1.058;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#DiamondLend)"
+         d="m 116.53526,101.6731 h 19.94508"
+         id="path5255" />
+      <circle
+         style="fill:#2196f3;fill-opacity:1;stroke:none;stroke-width:1.77091;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="path5125"
+         cx="111.24603"
+         cy="101.05711"
+         r="6.9095612" />
+      <circle
+         style="fill:#f57c00;fill-opacity:1;stroke:none;stroke-width:1.77091;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="path5125-0"
+         cx="145.19991"
+         cy="101.77338"
+         r="6.9095612" />
+    </g>
+    <circle
+       style="fill:#f4511e;fill-opacity:1;stroke:none;stroke-width:1.77091;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path5125-0-8"
+       cx="171.72951"
+       cy="132.25761"
+       r="6.9095612" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.5833px;line-height:1.25;font-family:'Meslo LG S DZ for Powerline';-inkscape-font-specification:'Meslo LG S DZ for Powerline';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="117.14374"
+       y="175.70987"
+       id="text5229-9"><tspan
+         sodipodi:role="line"
+         id="tspan5227-7"
+         x="117.14374"
+         y="175.70987"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Meslo LG S DZ for Powerline';-inkscape-font-specification:'Meslo LG S DZ for Powerline';stroke-width:0.264583">x2y'</tspan></text>
+    <g
+       id="g5453-7"
+       transform="translate(-22.067044,130.40698)">
+      <path
+         style="fill:none;stroke:#455a64;stroke-width:0.949957;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#EmptyDiamondL)"
+         d="m 143.38401,30.307142 h 16.07948"
+         id="path5255-6" />
+      <circle
+         style="fill:#2196f3;fill-opacity:1;stroke:none;stroke-width:1.77091;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="path5125-7"
+         cx="138.09479"
+         cy="29.691145"
+         r="6.9095612" />
+      <circle
+         style="fill:#f57c00;fill-opacity:1;stroke:none;stroke-width:1.77091;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="path5125-0-3"
+         cx="172.04866"
+         cy="30.407413"
+         r="6.9095612" />
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;fill:#f4511e;fill-opacity:1;stroke:none;stroke-width:0.265;stroke-miterlimit:4;stroke-dasharray:none"
+       x="184.93518"
+       y="138.48367"
+       id="text11097"><tspan
+         sodipodi:role="line"
+         id="tspan11095"
+         x="184.93518"
+         y="138.48367"
+         style="fill:#f4511e;fill-opacity:1;stroke-width:0.265;stroke-miterlimit:4;stroke-dasharray:none">x2ydd</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.5833px;line-height:1.25;font-family:'Meslo LG S DZ for Powerline';-inkscape-font-specification:'Meslo LG S DZ for Powerline';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="48.694534"
+       y="137.52629"
+       id="text11248"><tspan
+         sodipodi:role="line"
+         id="tspan11246"
+         x="48.694534"
+         y="137.52629"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Meslo LG S DZ for Powerline';-inkscape-font-specification:'Meslo LG S DZ for Powerline';stroke-width:0.264583">delta</tspan></text>
+    <rect
+       style="fill:none;fill-opacity:1;stroke:#f4511e;stroke-width:0.933664;stroke-miterlimit:4;stroke-dasharray:0.933664, 0.933664;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect11250"
+       width="139.58272"
+       height="98.468323"
+       x="44.087738"
+       y="83.199142" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;fill:#2196f3;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="99.628807"
+       y="108.12545"
+       id="text9996-1-1"><tspan
+         sodipodi:role="line"
+         id="tspan9994-7-2"
+         x="99.628807"
+         y="108.12545"
+         style="fill:#2196f3;fill-opacity:1;stroke-width:0.264583">x</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;fill:#2196f3;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="101.72119"
+       y="163.2338"
+       id="text9996-1-9"><tspan
+         sodipodi:role="line"
+         id="tspan9994-7-3"
+         x="101.72119"
+         y="163.2338"
+         style="fill:#2196f3;fill-opacity:1;stroke-width:0.264583">x</tspan></text>
+  </g>
+</svg>
