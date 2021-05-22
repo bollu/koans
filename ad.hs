@@ -1,0 +1,2 @@
+-- https://www.stackage.org/haddock/nightly-2021-05-10/ad-4.4.1/index.html
+-- Explain how AD works.

@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <cstdlib>
 #include <vector>
 #include <iostream>
 static const int LEN=100;
@@ -95,11 +96,11 @@ void feninit() {
 
 int main() {
     srand(time(NULL));
-
     static const int MOD = 3;
     
-    for(int i = 1; i <= LEN; i++)
+    for(int i = 1; i <= LEN; i++) {
         A[i] = rand() % MOD;
+    }
 
     printvec(A, "A");
     feninit();
