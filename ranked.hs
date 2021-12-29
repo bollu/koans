@@ -62,6 +62,7 @@ data RankExpr a where
  Truth :: a ->  RankExpr a
  Falsity :: RankExpr a
  Choice :: RankExpr a -> Rank -> RankExpr a -> RankExpr a
+ Product :: RankExpr a -> RankExpr b -> RankExpr (a, b)
  Observe :: (a -> Bool) -> RankExpr a -> RankExpr a -- what is this in the monad hierarchy?
  Call :: Ord b => RankExpr (a -> b) -> RankExpr a -> RankExpr b -- applicative
  -- Bind :: (a -> RankExpr b) -> RankExpr a -> RankExpr b -- monad?
@@ -85,10 +86,11 @@ mergeRanks curr xs ys =
 removeDead :: [(a, Rank)] -> [(a, Rank)]
 removeDead = filter (not . (== RInfty) . snd)
 
+-- instance Functor RankExpr where
+--     -- | (a -> b) -> RankExpr a -> RankExpr b
+--     fmap f x = Call (Truth f) x
+
 {-
-instance Functor RankExpr where
-    -- | (a -> b) -> RankExpr a -> RankExpr b
-    fmap f x = Call (Truth f) x
 
 
 instance Applicative RankExpr where
@@ -120,6 +122,10 @@ sem (Observe pred r) =
 
 sem (Call rsf rsx) =
   produceCall 0 mempty (diagonalize (sem rsf) (sem rsx))
+
+sem (Product rsa rsb) =
+    produceProduct 0 $ diagonalize (sem rsa) (sem rsb)
+
 
 egTruth :: [(String, Rank)]
 egTruth = sem $ Truth "a"
@@ -178,5 +184,19 @@ produceCall rnk seen (((f,r),(x,s)):rest) =
          let seen' = S.insert y seen
          in (y,t):produceCall rnk seen' rest
       True -> produceCall rnk seen rest
-      
-             
+
+
+-- see that we can only ever inflate ranks, so the rank of (f x) can be at most rank of f, rank of x?
+produceProduct :: ()
+  => Rank -- rnk
+  -> [((a, Rank), (b, Rank))] -- fs 
+  -> [((a, b), Rank)]
+produceProduct rnk [] = [] 
+produceProduct rnk (((a,r),(b,s)):xs) = let t = r + s in ((a,b),t):(produceProduct t xs)
+
+-- call2 :: (Ord b, Ord c) => (a -> b -> c) -> (RankExpr a, RankExpr b) -> RankExpr c
+-- call2 f (ea, eb) = Call (curry f) 
+
+wordAutomata :: String -> RankExpr String
+wordAutomata [] = Truth []
+-- wordAutomata (x:xs) = (Choice  (Truth x) 1 (Truth '*')) wordAutomata xs)
